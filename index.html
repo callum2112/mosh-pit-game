@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Mosh Pit Dance Game</title>
+<style>
+  body {
+    margin: 0;
+    background: #121212;
+    color: #eee;
+    font-family: 'Arial Black', sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    user-select: none;
+  }
+  #gameArea {
+    background: #222;
+    border: 3px solid #ff0000;
+    border-radius: 15px;
+    width: 300px;
+    height: 400px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  #headbangIcon {
+    font-size: 100px;
+    margin-bottom: 20px;
+    color: #ff0000;
+    user-select: none;
+  }
+  #score {
+    font-size: 28px;
+    margin: 10px 0;
+  }
+  #message {
+    font-size: 20px;
+    margin: 15px 0;
+    min-height: 24px;
+  }
+  button {
+    padding: 12px 25px;
+    background: #ff0000;
+    border: none;
+    border-radius: 10px;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 15px;
+  }
+</style>
+</head>
+<body>
+  <div id="gameArea">
+    <div id="headbangIcon">🤘</div>
+    <div id="score">Score: 0</div>
+    <div id="message">Tap in rhythm to headbang!</div>
+    <button id="startBtn">Start Game</button>
+  </div>
+
+<script>
+  const startBtn = document.getElementById('startBtn');
+  const scoreEl = document.getElementById('score');
+  const messageEl = document.getElementById('message');
+  const gameArea = document.getElementById('gameArea');
+
+  let score = 0;
+  let gameStarted = false;
+  let beatInterval;
+  let nextBeatTime = 0;
+  let tolerance = 300; // ms for timing window
+
+  // Beat every 600ms (100 BPM)
+  const beatTime = 600;
+
+  function startGame() {
+    score = 0;
+    gameStarted = true;
+    scoreEl.textContent = "Score: 0";
+    messageEl.textContent = "Game started! Tap in rhythm!";
+    startBtn.style.display = 'none';
+
+    nextBeatTime = performance.now() + beatTime;
+    beatInterval = setInterval(() => {
+      nextBeatTime += beatTime;
+      // Visual cue: flash icon
+      flashIcon();
+    }, beatTime);
+
+    // End game after 30 seconds
+    setTimeout(endGame, 30000);
+  }
+
+  function endGame() {
+    gameStarted = false;
+    clearInterval(beatInterval);
+    messageEl.textContent = `Game Over! Final Score: ${score}`;
+    startBtn.style.display = 'block';
+    startBtn.textContent = "Play Again";
+  }
+
+  function flashIcon() {
+    const icon = document.getElementById('headbangIcon');
+    icon.style.color = '#ffffff';
+    setTimeout(() => {
+      icon.style.color = '#ff0000';
+    }, 100);
+  }
+
+  // Check tap timing
+  function checkTap() {
+    if (!gameStarted) return;
+
+    const now = performance.now();
+    const diff = Math.abs(now - nextBeatTime);
+    if (diff < tolerance) {
+      // Good tap
+      score++;
+      scoreEl.textContent = `Score: ${score}`;
+      messageEl.textContent = "Nice! Keep it going 🤘";
+      flashIcon();
+    } else {
+      messageEl.textContent = "Try to tap on the beat!";
+    }
+  }
+
+  // Tap/click listener
+  gameArea.addEventListener('click', checkTap);
+  gameArea.addEventListener('touchstart', checkTap);
+
+  startBtn.addEventListener('click', startGame);
+</script>
+</body>
+</html>
